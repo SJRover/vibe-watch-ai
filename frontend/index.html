@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>NextWatch.net – Pick what to watch</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="snow" aria-hidden="true"></div>
+
+  <!-- Onboarding -->
+  <div class="modal" id="onboard-modal" hidden>
+    <div class="modal-card">
+      <h2>Welcome to NextWatch ✨</h2>
+      <p class="muted">Type your vibe. Adjust mood. I’ll recommend picks and where to watch them.</p>
+      <div class="pill-row">
+        <button class="pill js-example" type="button" data-text="Snowy night, hot chocolate, I want something cozy and feel-good">Snowy & cozy</button>
+        <button class="pill js-example" type="button" data-text="Kids shows age 6–10, funny and wholesome">Kids 6–10</button>
+        <button class="pill js-example" type="button" data-text="Date night, low energy, romantic but not cheesy">Date night</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="onboard-close" type="button">Let’s go</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <img class="brand-logo" src="assets/nextwatch-logo.png" alt="NextWatch logo" />
+        <div>
+          <h1>NextWatch<span class="tld">.net</span></h1>
+          <p class="subtitle">Describe the vibe — I’ll pick what to watch and where.</p>
+        </div>
+      </div>
+      <button class="btn ghost" id="btn-surprise" type="button" title="Surprise me">🎲 Surprise me</button>
+    </header>
+
+    <main class="grid">
+      <!-- LEFT: Search -->
+      <section class="card">
+        <h2>Find recommendations</h2>
+
+        <form id="ai-form">
+          <label class="label" for="prompt">What’s going on?</label>
+          <textarea id="prompt" rows="3" placeholder="e.g. Christmas movies, cozy vibe…"></textarea>
+
+          <div class="row">
+            <div class="col">
+              <div class="label">Mood</div>
+              <input id="mood" type="range" min="1" max="5" step="1" value="3" />
+              <div class="range-labels">
+                <span>Chill</span><span>Light</span><span>Balanced</span><span>Hype</span><span>Chaos</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <div class="label">Streaming filters (optional)</div>
+              <div class="tiny muted">Click = require. Shift+Click = exclude.</div>
+              <div class="pill-row" id="provider-row">
+                <button class="pill js-provider" type="button" data-provider="Netflix">Netflix</button>
+                <button class="pill js-provider" type="button" data-provider="Prime Video">Prime</button>
+                <button class="pill js-provider" type="button" data-provider="Disney Plus">Disney+</button>
+                <button class="pill js-provider" type="button" data-provider="Apple TV Plus">Apple TV+</button>
+                <button class="pill js-provider" type="button" data-provider="Paramount Plus">Paramount+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" type="submit">Recommend</button>
+            <button class="btn" type="button" id="btn-refresh">Refresh picks</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- RIGHT: Results -->
+      <section class="card" id="results-card" hidden>
+        <div class="results-head">
+          <h2>Recommended picks</h2>
+          <div class="tiny muted" id="results-sub"></div>
+        </div>
+        <div id="result-body"></div>
+      </section>
+
+      <!-- Playlists -->
+      <section class="card">
+        <div class="split">
+          <h2>Playlists</h2>
+          <button class="btn ghost" id="btn-delete-playlist" type="button">Delete playlist</button>
+        </div>
+
+        <form id="playlist-form" class="inline">
+          <input id="playlist-name" type="text" placeholder="New playlist name…" />
+          <button class="btn" type="submit">Create</button>
+        </form>
+
+        <div id="playlist-list" class="pill-row"></div>
+
+        <div class="split">
+          <h3 id="active-playlist-title">Select a playlist</h3>
+          <div class="tiny muted">Add from recommendations ➕</div>
+        </div>
+        <div id="playlist-items"></div>
+      </section>
+
+      <!-- Watch later -->
+      <section class="card">
+        <div class="split">
+          <h2>Watch later</h2>
+          <button class="btn ghost" id="btn-clear-later" type="button">Clear</button>
+        </div>
+        <div id="watchlater-list"></div>
+      </section>
+
+      <!-- Watched -->
+      <section class="card">
+        <div class="split">
+          <h2>Watched</h2>
+          <button class="btn ghost" id="btn-clear-watched" type="button">Clear</button>
+        </div>
+        <div id="watched-list"></div>
+        <button class="btn ghost" id="btn-clear" type="button">Clear likes/dislikes</button>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <small class="muted">NextWatch.net prototype: local-only memory. Public launch later can add accounts & syncing.</small>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
