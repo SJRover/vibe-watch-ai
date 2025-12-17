@@ -47,6 +47,15 @@ let lastRefreshToken = "";
 // provider filter state
 let providerPrefs = loadJson(LS_PROVIDER_PREFS, { include: [], exclude: [] });
 
+// ===== API base (auto local vs live) =====
+const IS_LOCAL =
+  location.hostname === "localhost" ||
+  location.hostname === "127.0.0.1";
+
+const API_BASE = IS_LOCAL
+  ? "http://localhost:3000"
+  : "https://vibe-watch-ai.onrender.com";
+
 // ===== Helpers =====
 function escapeHtml(str) {
   return String(str || "")
@@ -76,6 +85,7 @@ function toast(msg) {
 }
 function getRegion() { return "GB"; }
 function getLocalHour() { try { return new Date().getHours(); } catch { return null; } }
+
 function normalizeItem(item) {
   return {
     id: item.id,
@@ -336,6 +346,7 @@ if (providerRow) {
 async function fetchRecommendations(prompt, opts = {}) {
   const liked = loadJson(LS_LIKED, []);
   const disliked = loadJson(LS_DISLIKED, []);
+  const watched = loadWatched(); // ✅ send watched history to backend
   const region = getRegion();
 
   const excludeIds = opts.excludeIds || [];
@@ -343,7 +354,7 @@ async function fetchRecommendations(prompt, opts = {}) {
   const mood = Number(moodEl?.value || 3);
   const localHour = getLocalHour();
 
-  const res = await fetch("https://vibe-watch-ai.onrender.com/api/recommend", {
+  const res = await fetch(`${API_BASE}/api/recommend`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -352,6 +363,7 @@ async function fetchRecommendations(prompt, opts = {}) {
       localHour,
       liked,
       disliked,
+      watched,
       excludeIds,
       region,
       refreshToken,
@@ -362,6 +374,7 @@ async function fetchRecommendations(prompt, opts = {}) {
 
   if (!res.ok) throw new Error(`Server error: ${res.status}`);
   const data = await res.json();
+
   return Array.isArray(data.results) ? data.results : [];
 }
 
@@ -372,7 +385,8 @@ function renderResults(items) {
   items = Array.from(new Map((items || []).map(x => [`${x.media_type}:${x.id}`, x])).values());
 
   if (!items.length) {
-    resultBody.innerHTML = "<p class='muted'>No results returned.</p>";
+    resultBody.innerHTML =
+      "<p class='muted'>No results returned. Try removing provider filters or changing the vibe.</p>";
     return;
   }
 
@@ -431,7 +445,7 @@ if (aiForm) {
       renderResults(items);
     } catch (err) {
       console.error(err);
-      if (resultBody) resultBody.innerHTML = "<p class='muted'>Server error. Check backend console.</p>";
+      if (resultBody) resultBody.innerHTML = "<p class='muted'>Server error. Check Render logs.</p>";
     }
   });
 }
@@ -597,7 +611,7 @@ if (btnClear) {
   btnClear.addEventListener("click", () => {
     localStorage.removeItem(LS_LIKED);
     localStorage.removeItem(LS_DISLIKED);
-    toast("Cleared likes/dislikes.");
+    toast("Cleared likes and dislikes.");
   });
 }
 if (btnClearLater) {
