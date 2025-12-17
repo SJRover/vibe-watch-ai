@@ -343,7 +343,7 @@ async function fetchRecommendations(prompt, opts = {}) {
   const mood = Number(moodEl?.value || 3);
   const localHour = getLocalHour();
 
-  const res = await fetch("/api/recommend", {
+  const res = await fetch("https://vibe-watch-ai.onrender.com/api/recommend", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
